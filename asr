@@ -1,0 +1,78 @@
+import speech_recognition as sr
+import pyttsx3
+import pywhatkit
+import datetime
+import wikipedia
+from speech_recognition import AudioData, Microphone
+
+
+def talk(message):
+    # Initialize the text-to-speech engine
+    engine = pyttsx3.init()
+
+    # Set properties, if needed (optional)
+    engine.setProperty('rate', 150)  # Speed of speech
+
+    # Speak the given message
+    engine.say(message)
+
+    # Wait for the speech to finish
+    engine.runAndWait()
+
+
+
+
+def take_command():
+    listener = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        listener.adjust_for_ambient_noise(source, duration=1)
+        audio = listener.recognize_ibm(source)
+        try:
+            print("Recognizing...")
+            command = listener.listen_google(audio).lower()
+            print("You said:", command)
+            return command
+        except sr.UnknownValueError:
+            print("Sorry, I couldn't understand the audio.")
+            return ""
+        except sr.RequestError as e :
+            print("Error with the speech recognition service: {e}")
+            return ""
+
+
+def run_kai():
+    talk("I am kai. What can I do for you?")
+
+    while True:
+        command = take_command()
+        print(command)
+
+        if 'who is ' in command:
+            person = command.replace('who is','').strip()
+            info =  wikipedia.summary(person,1)
+            print(info)
+            talk('the person is'+ info)
+
+        elif 'how are you ' in command:
+            talk('gee, im fine thank you')
+
+        elif 'are you single ' in command:
+            talk('im flattered,but no')
+
+        elif 'play' in command:
+            song = command.replace('play', '').strip()
+            talk('Playing ' + song)
+            pywhatkit.playonyt(song)
+        elif 'time' in command:
+            current_time = datetime.datetime.now().strftime('%H:%M')
+            print(current_time)
+            talk('The current time is ' + current_time)
+        elif 'stop' in command:
+            talk('Goodbye!')
+            break
+        else:
+            talk('Sorry, I didnt understand that command')
+            break
+
+run_kai()
